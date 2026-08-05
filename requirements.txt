@@ -1,0 +1,35 @@
+# rag_system 依赖（2026-08-03 生成，版本已锁定）
+# 安装：pip install -r requirements.txt
+
+# Web 框架
+fastapi==0.141.1
+uvicorn==0.51.0
+streamlit==1.60.0
+
+# AI / LLM
+openai==2.50.0
+
+# RAG 向量检索
+chromadb==1.5.9
+sentence-transformers==2.7.0
+transformers==4.44.0
+
+# 文档解析
+PyPDF2==3.0.1
+python-docx==1.2.0
+beautifulsoup4==4.15.0
+
+# 配置与认证
+python-dotenv==1.2.2
+PyJWT==2.13.0
+
+# LangChain（教学/进阶 demo 使用）
+langchain-classic==1.0.8
+langchain-chroma==1.1.0
+langchain-text-splitters==1.1.2
+
+# RAG 评估（RAGAS，2026-08-03 新增）
+ragas==0.4.3
+datasets==5.0.1
+langchain-openai==1.4.1
+langchain-community==0.3.29
