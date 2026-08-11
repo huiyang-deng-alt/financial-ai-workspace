@@ -1,4 +1,4 @@
-"""检索模块（v2：父文档检索）"""
+﻿"""检索模块（v2：父文档检索）"""
 from typing import List, Dict
 from openai import OpenAI
 import jieba
@@ -202,15 +202,20 @@ class Retriever:
 回答："""
     
     @staticmethod
-    def _extract_sources(metadatas: List[Dict]) -> List[Dict]:
+    def _extract_sources(metadatas: List[Dict], max_excerpt: int = 200) -> List[Dict]:
+        """提取来源：源文件名 + 命中原文片段（父块文本，按文件去重）"""
         sources = []
         seen = set()
         for meta in metadatas:
             source = meta.get('source', 'unknown')
             if source not in seen:
+                excerpt = meta.get('parent_text', '') or ''
+                if len(excerpt) > max_excerpt:
+                    excerpt = excerpt[:max_excerpt] + '……'
                 sources.append({
                     'source': source,
-                    'filename': meta.get('filename', 'unknown')
+                    'filename': meta.get('filename', 'unknown'),
+                    'excerpt': excerpt
                 })
                 seen.add(source)
         return sources

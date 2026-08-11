@@ -130,6 +130,43 @@ def get_history(user_id: int = Depends(get_current_user_id)):
         ],
     }
 
+@app.get("/users")
+def list_users():
+    items = [{"id": u["id"], "username": u["username"]} for u in users_db.values()]
+    return {"total": len(items), "items": items}
+
+@app.get("/users/{user_id}")
+def get_user(user_id: int):
+    user = users_db.get(user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="用户不存在")
+    return {"id": user["id"], "username": user["username"]}
+
+@app.post("/users", status_code=201)
+def create_user(req: UserCreate):
+    global next_id
+    for u in users_db.values():
+        if u["username"] == req.username:
+            raise HTTPException(status_code=400, detail="用户名已存在")
+    user = {"id": next_id, "username": req.username, "password_hash": req.password}
+    users_db[next_id] = user
+    next_id += 1
+    return {"id": user["id"], "username": user["username"]}
+
+@app.put("/users/{user_id}")
+def update_user(user_id: int, req: UserUpdate):
+    if user_id not in users_db:
+        raise HTTPException(status_code=404, detail="用户不存在")
+    users_db[user_id]["username"] = req.username
+    users_db[user_id]["password_hash"] = req.password
+    return {"id": user_id, "username": req.username}
+
+@app.delete("/users/{user_id}", status_code=204)
+def delete_user(user_id: int):
+    if user_id not in users_db:
+        raise HTTPException(status_code=404, detail="用户不存在")
+    del users_db[user_id]
+    return None
 # ============ 第 6 部分：自测（用代码代替浏览器测接口） ============
 if __name__ == "__main__":
     # TestClient：模拟一个客户端发请求，不用真的开服务器

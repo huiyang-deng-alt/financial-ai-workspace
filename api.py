@@ -1,4 +1,4 @@
-"""RAG System - FastAPI 外壳（不移动任何文件）"""
+﻿"""RAG System - FastAPI 外壳（不移动任何文件）"""
 import os, sys
 from pathlib import Path
 
@@ -37,4 +37,5 @@ def root():
 @app.post("/chat")
 def chat(req: ChatRequest):
     result = pipeline.query(req.question, top_k=3)
-    return {"answer": result["answer"], "sources": [s["filename"] for s in result["sources"]]}
+    return {"answer": result["answer"], "sources": result["sources"]}
+

@@ -1,4 +1,4 @@
-# 金融顾问 AI 工作台（rag_system）
+﻿# 金融顾问 AI 工作台（rag_system）
 
 > 基于 DeepSeek 的金融类顾问 AI 后端系统：RAG 知识库问答 + JWT 用户认证 + 对话历史 + 混合检索。
 > 广州理工学院 · 人工智能专业 · AI 应用开发方向学习项目
@@ -22,6 +22,7 @@
 - [x] JWT 用户认证（`auth.py` 哈希/签发/验证 + `/register` `/login` `/me`）
 - [x] SQLite 持久化（用户表 + 对话历史 messages 表，参数化查询防注入）
 - [x] 请求日志 + 耗时中间件、CORS 跨域
+- [x] **引用溯源**（8/7）：回答附带完整来源——源文件名 + 命中原文片段（父块 excerpt），`/chat` 返回结构化 sources，前端引用卡片展示
 - [ ] Rerank 重排序（bge-reranker，检索质量下一轮优化）
 - [ ] Docker 部署 + 线上 URL（Week 6-7）
 
