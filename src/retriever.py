@@ -4,13 +4,17 @@ from openai import OpenAI
 import jieba
 from rank_bm25 import BM25Okapi
 
+# Rerank 精排的候选池大小：先召回 50 条，再精排取 top_k
+RERANK_CANDIDATES = 50
+
 class Retriever:
     """检索器（父子文档检索版）"""
 
-    def hybrid_search(self, query: str, top_k: int = 3) -> Dict:
-        """混合检索：向量（语义）+ BM25（关键词）→ RRF 融合"""
+    def hybrid_search(self, query: str, top_k: int = 3, use_rerank: bool = False) -> Dict:
+        """混合检索：向量（语义）+ BM25（关键词）→ RRF 融合；use_rerank=True 时先召回 50 条再精排"""
+        recall_k = RERANK_CANDIDATES if use_rerank else top_k
         # 1. 向量路：中文先翻译成英文（适配英文 Embedding）
-        vec = self.vector_store.search(self._translate_query(query), top_k=top_k)
+        vec = self.vector_store.search(self._translate_query(query), top_k=recall_k)
         vec_entries = [
             {"chunk_id": m.get("chunk_id", f"vec_{i}"), "text": t, "metadata": m}
             for i, (t, m) in enumerate(zip(vec["documents"], vec["metadatas"]))
@@ -20,11 +24,15 @@ class Retriever:
         bm25_entries = [
             {"chunk_id": self.bm25_metas[i].get("chunk_id", f"bm25_{i}"),
              "text": self.bm25_docs[i], "metadata": self.bm25_metas[i]}
-            for i in self._bm25_search(query, top_k=top_k)
+            for i in self._bm25_search(query, top_k=recall_k)
         ]
 
         # 3. RRF 融合，输出格式和 vector_store.search 保持一致
-        fused = self._rrf_merge([vec_entries, bm25_entries], top_k)
+        fused = self._rrf_merge([vec_entries, bm25_entries], recall_k)
+
+        # 4.（可选）Rerank 精排：交叉编码器逐条打分，取最终 top_k
+        if use_rerank and fused:
+            fused = self._rerank_entries(query, fused, top_k)
         return {
             "documents": [e["text"] for e in fused],
             "metadatas": [e["metadata"] for e in fused],
@@ -34,6 +42,7 @@ class Retriever:
     def __init__(self, vector_store, llm_client: OpenAI):
         self.vector_store = vector_store
         self.llm_client = llm_client
+        self.reranker = None  # Rerank 模型懒加载（首次精排时才加载）
         chunks = vector_store.get_all_chunks()
         self.bm25_docs = [chunk["text"] for chunk in chunks]
         self.bm25_metas = [chunk["metadata"] for chunk in chunks]
@@ -43,9 +52,10 @@ class Retriever:
         self, 
         query: str, 
         top_k: int = 3,
-        model: str = "deepseek-chat"
+        model: str = "deepseek-chat",
+        use_rerank: bool = True
     ) -> Dict:
-        search_results = self.hybrid_search(query, top_k=top_k)
+        search_results = self.hybrid_search(query, top_k=top_k, use_rerank=use_rerank)
         
         if not search_results['documents']:
             return {
@@ -160,6 +170,13 @@ class Retriever:
                 meta_map[cid] = entry
         ranked = sorted(scores, key=scores.get, reverse=True)[:top_k]
         return [meta_map[cid] for cid in ranked]
+
+    def _rerank_entries(self, query: str, candidates: List[Dict], top_k: int) -> List[Dict]:
+        """用交叉编码器（bge-reranker）对候选精排；模型懒加载，GPU 优先"""
+        if self.reranker is None:
+            from src.reranker import Reranker
+            self.reranker = Reranker()
+        return self.reranker.rerank(query, candidates, top_k)
 
     @staticmethod
     def _extract_parent_texts(metadatas: List[Dict], child_texts: List[str]) -> List[str]:
