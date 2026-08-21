@@ -38,14 +38,14 @@
 ## Docker 一键运行（推荐）
 
 ```bash
-# 在 docker-compose.yml 所在目录（AI应用开发教程/）执行：
-cd AI应用开发教程
+# 在项目根目录（含 docker-compose.yml，即本仓库根目录）执行：
 docker compose up -d --build
 # 浏览器打开 http://localhost:8501（前端）；后端 API 文档 http://localhost:8000/docs
 ```
 
 - 敏感配置：`.env` 通过 `env_file` 注入容器，不烧进镜像（复制 `.env.example` 为 `.env` 并填入 Key）。
-- 数据与模型：`chroma_db`（向量库）、`data`（财报 PDF）、`users.db`（用户/历史）、`D:/models/bge-reranker-base`（精排模型）通过挂载卷提供，容器重启/重建不丢。
+- 数据与模型：`chroma_db`（向量库）、`data`（财报 PDF）、`users.db`（用户/历史）通过挂载卷提供，容器重启/重建不丢。
+- 精排模型（bge-reranker-base）：默认挂载宿主机 `D:/models`，可在 `.env` 设 `RERANK_MODEL_HOST_DIR` 指向你自己的模型目录。
 - 停止服务：`docker compose down`（数据留在宿主机，不会丢）。
 
 ## 本地运行

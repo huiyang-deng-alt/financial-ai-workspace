@@ -1,0 +1,29 @@
+# Enterprise AI Workspace 依赖
+# 安装：pip install -r requirements.txt
+
+# Web 框架
+fastapi>=0.141.0
+uvicorn>=0.51.0
+streamlit>=1.60.0
+
+# AI / LLM
+openai>=2.0.0
+
+# RAG 向量检索
+chromadb>=1.5.0
+sentence-transformers==2.7.0
+transformers==4.44.0
+
+# 文档解析
+PyPDF2>=3.0.0
+python-docx>=1.2.0
+beautifulsoup4>=4.15.0
+
+# 配置与认证
+python-dotenv>=1.2.0
+PyJWT>=2.13.0
+
+# LangChain（教学/进阶 demo 使用）
+langchain-classic>=1.0.8
+langchain-text-splitters>=1.1.0
+langchain-chroma>=1.1.0

@@ -1,0 +1,36 @@
+# ============ 一键编排：后端 FastAPI + 前端 Streamlit ============
+# 用法（装好 Docker Desktop 后，在本文件所在目录执行）：
+#   docker compose up -d --build
+#   然后浏览器打开 http://localhost:8501
+#
+# 说明：密钥/数据/模型均通过 env_file 与挂载卷注入，不烧进镜像。
+
+services:
+  backend:
+    build: .
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      - HF_HOME=/app/.hf_cache
+      - HF_HUB_OFFLINE=1
+      - TRANSFORMERS_OFFLINE=1
+      - RERANK_MODEL_PATH=/app/models/bge-reranker-base
+    volumes:
+      - ./.hf_cache:/app/.hf_cache        # 离线模型缓存
+      - ./chroma_db:/app/chroma_db        # 向量库（持久化）
+      - ./data:/app/data                  # 财报 PDF
+      - ./users.db:/app/users.db          # 用户/对话历史
+      - ${RERANK_MODEL_HOST_DIR:-D:/models}:/app/models   # reranker 精排模型（宿主机目录）
+    restart: unless-stopped
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "8501:8501"
+    environment:
+      - API=http://localhost:8000         # 前端组件在浏览器里跑，须用宿主机映射端口
+    depends_on:
+      - backend
+    restart: unless-stopped
