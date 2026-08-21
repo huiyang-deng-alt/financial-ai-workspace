@@ -1,8 +1,8 @@
-﻿"""Rerank 精排模块：交叉编码器 bge-reranker-base（GPU 优先，模型在 D:/models）"""
+﻿"""Rerank 精排模块：交叉编码器 bge-reranker-base（GPU 优先，模型在 ./models/bge-reranker-base）"""
 import os
 from typing import List, Dict
 
-MODEL_PATH = os.environ.get("RERANK_MODEL_PATH", r"D:\models\bge-reranker-base")
+MODEL_PATH = os.environ.get("RERANK_MODEL_PATH", "./models/bge-reranker-base")
 
 
 class Reranker:

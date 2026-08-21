@@ -25,3 +25,6 @@ data/
 # OS
 .DS_Store
 Thumbs.db
+
+# 历史练习/过渡文件（不提交）
+_archive/

@@ -9,11 +9,12 @@
 import hashlib
 import hmac
 import secrets
+import os
 import time
 
 import jwt
 
-SECRET_KEY = "dev-secret-change-me"  # 生产环境放 .env，不能硬编码
+SECRET_KEY = os.getenv("JWT_SECRET_KEY", "dev-secret-change-me")
 ALGORITHM = "HS256"
 TOKEN_EXPIRE_SECONDS = 3600  # token 有效期 1 小时
 
